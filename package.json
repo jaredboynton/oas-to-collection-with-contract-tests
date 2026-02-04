@@ -6,8 +6,11 @@
   "type": "module",
   "scripts": {
     "generate": "node src/index.js",
+    "sync:spec-hub": "node src/spec-hub-sync.js",
+    "validate:spec": "postman spec lint",
     "test:collection": "postman collection run output/collection.json --environment output/environment.json",
-    "demo": "npm run generate -- --spec specs/sample-api.yaml --output output/collection.json && echo 'Collection generated. Run with: postman collection run output/collection.json'"
+    "demo": "npm run generate -- --spec specs/sample-api.yaml && echo 'Collection generated. Run with: postman collection run output/collection.json'",
+    "validate:test-persistence": "node scripts/validate-test-persistence.js"
   },
   "keywords": [
     "openapi",
