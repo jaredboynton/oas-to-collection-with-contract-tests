@@ -233,9 +233,9 @@ async function sync(options) {
 
   const generatedCollections = [];
 
-  // Step 4: Generate or sync docs collection (always, no tests)
-  logStep('Step 4', 'Generating/syncing docs collection from Spec Hub');
-  const docsCollectionName = `${specName} - Docs`;
+  // Step 4: Generate or sync main collection (always, no tests - for documentation)
+  logStep('Step 4', 'Generating/syncing main collection from Spec Hub');
+  const docsCollectionName = specName;  // Default/clean collection (no suffix)
   let docsCollectionUid = null;
   try {
     docsCollectionUid = await client.generateOrSyncCollection(specId, docsCollectionName, {
@@ -243,7 +243,7 @@ async function sync(options) {
       folderStrategy: 'Tags'
     });
     logSuccess(`Docs collection: ${docsCollectionUid}`);
-    generatedCollections.push({ name: docsCollectionName, uid: docsCollectionUid, type: 'docs' });
+    generatedCollections.push({ name: docsCollectionName, uid: docsCollectionUid, type: 'main' });
   } catch (error) {
     logError(`Failed to generate docs collection: ${error.message}`);
   }
