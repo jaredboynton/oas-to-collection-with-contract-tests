@@ -1,18 +1,17 @@
 {
   "name": "oas-contract-test-generator",
   "version": "1.0.0",
-  "description": "Generate Postman collections with contract tests from OpenAPI specs",
-  "main": "src/index.js",
+  "description": "Generate Postman collections with contract tests from OpenAPI specs via Spec Hub",
+  "main": "src/spec-hub-sync.js",
   "type": "module",
   "scripts": {
-    "generate": "node src/index.js",
     "sync:spec-hub": "node src/spec-hub-sync.js",
     "sync:spec-hub:smoke": "node src/spec-hub-sync.js --test-level smoke",
     "sync:spec-hub:contract": "node src/spec-hub-sync.js --test-level contract",
     "validate:spec": "postman spec lint",
-    "test:collection": "postman collection run output/collection.json --environment output/environment.json",
     "demo": "npm run sync:spec-hub -- --spec specs/sample-api.yaml",
-    "validate:test-persistence": "node scripts/validate-test-persistence.js"
+    "cleanup:collections": "node scripts/cleanup-collections.js",
+    "cleanup:specs": "node scripts/cleanup-specs.js"
   },
   "keywords": [
     "openapi",

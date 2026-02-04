@@ -252,7 +252,64 @@ postman environment update "Task Management API - Staging server" \
 
 ## 🔄 CI/CD Integration
 
-See `.github/workflows/contract-tests.yml` for a complete example:
+### GitHub Actions Workflow
+
+The included `.github/workflows/contract-tests.yml` provides a complete CI/CD pipeline:
+
+**Features:**
+- Syncs spec to Postman Spec Hub on every push/PR
+- Generates all three collection types (main, smoke, contract)
+- Runs smoke and contract tests separately
+- Posts results as PR comments
+- Generates spec change reports (added/removed endpoints)
+- Supports manual workflow dispatch with environment selection
+
+### Required Repository Secrets
+
+Configure these in your GitHub repository settings (Settings → Secrets and variables → Actions):
+
+| Secret | Description | How to Get |
+|--------|-------------|------------|
+| `POSTMAN_API_KEY` | Postman API key for authentication | [Postman API Keys](https://web.postman.co/settings/me/api-keys) |
+| `POSTMAN_WORKSPACE_ID` | Target workspace ID | From workspace URL: `https://web.postman.co/workspace/{workspace-id}` |
+| `API_AUTH_TOKEN` | Auth token for test runs (optional) | Your API's auth token for authenticated endpoints |
+
+### Workflow Triggers
+
+```yaml
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'specs/**'      # Spec changes
+      - 'src/**'        # Generator changes
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'specs/**'
+  workflow_dispatch:    # Manual trigger
+    inputs:
+      test_level:       # all | smoke | contract
+      environment:      # staging | production
+```
+
+### Example Usage
+
+**Automatic on push:**
+```bash
+git add specs/api.yaml
+git commit -m "Add new endpoint"
+git push
+# Workflow runs automatically
+```
+
+**Manual with options:**
+1. Go to Actions → Contract Tests
+2. Click "Run workflow"
+3. Select test level and environment
+4. Click "Run"
+
+### Complete Workflow Example
 
 ```yaml
 name: Contract Tests
@@ -276,21 +333,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
-      - name: Login to Postman
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-        
       - name: Sync spec to Spec Hub
         run: npm run sync:spec-hub -- --spec specs/api.yaml
         env:
           POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
           POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
         
+      - name: Run smoke tests
+        run: |
+          postman collection run "API Name - Smoke Tests" \
+            --environment "API Name - Staging server" \
+            --reporters cli,junit
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        
       - name: Run contract tests
         run: |
-          postman collection run "Task Management API - Contract Tests" \
-            --environment "Task Management API - Production server" \
-            --reporters cli,junit \
-            --reporter-junit-export test-results.xml
+          postman collection run "API Name - Contract Tests" \
+            --environment "API Name - Staging server" \
+            --reporters cli,junit
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
 ```
 
 ## 📊 Test Generation Logic
@@ -312,6 +375,12 @@ jobs:
 | Content-Type | `content: application/json` | Header validation |
 | JSON Schema | Response schema defined | Structure validation |
 | Required Fields | `required: ["id", "name"]` | Field existence checks |
+| **Enum Validation** | `enum: ["a", "b"]` | `pm.expect(value).to.be.oneOf([...])` |
+| **Format Validation** | `format: date-time, email, uuid` | Regex pattern matching |
+| **Pattern Validation** | `pattern: "^\\d{3}$"` | Custom regex validation |
+| **String Constraints** | `minLength`, `maxLength` | Length boundary checks |
+| **Numeric Constraints** | `minimum`, `maximum`, `multipleOf` | Range validation |
+| **Array Constraints** | `minItems`, `maxItems` | Array size validation |
 | Error Structure | 4xx responses defined | Error field validation |
 
 ## 🎯 Positioning vs. Spec Hub Native Features
@@ -336,25 +405,22 @@ jobs:
 ```
 demo/
 ├── src/
+│   ├── spec-hub-sync.js        # ⭐ Main orchestrator (USE THIS)
 │   ├── spec-hub-client.js      # Spec Hub API client
-│   ├── spec-hub-sync.js        # Main orchestrator
-│   ├── test-generator.js       # Contract test generator
-│   ├── environment-generator.js # Smart environment generator
-│   ├── parser.js               # OpenAPI parser
-│   ├── index.js                # Legacy CLI entry point
-│   └── api-uploader.js         # Legacy uploader (deprecated)
+│   ├── test-generator.js       # Contract/smoke test generator
+│   ├── environment-generator.js # Multi-environment generator
+│   └── parser.js               # OpenAPI parser
 ├── scripts/
-│   ├── validate-test-persistence.js  # Validation script
-│   ├── cleanup-collections.js        # Cleanup orphaned collections
-│   └── cleanup-specs.js              # Cleanup orphaned specs
+│   ├── cleanup-collections.js  # Cleanup orphaned collections
+│   └── cleanup-specs.js        # Cleanup orphaned specs
 ├── specs/
 │   └── sample-api.yaml         # Demo OpenAPI spec
-├── output/                     # Generated files (gitignored)
-├── postman/                    # For workspace push compatibility
 ├── package.json
 ├── README.md
 └── CLAUDE.md
 ```
+
+> **Note:** Legacy files (`src/index.js`, `src/api-uploader.js`, `src/builder.js`, `src/generator.js`) are deprecated and kept for reference only. Use `src/spec-hub-sync.js` for all new work.
 
 ### Available Scripts
 

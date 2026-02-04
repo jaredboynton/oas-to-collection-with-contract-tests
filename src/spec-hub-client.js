@@ -74,14 +74,25 @@ class SpecHubClient {
 
   /**
    * Get collections generated from a spec
+   * Distinguishes between "no collections" (404) and API errors
    */
   async getSpecGeneratedCollections(specId) {
     try {
       const result = await this.request('GET', `/specs/${specId}/generations/collection`);
       return result.collections || [];
     } catch (error) {
-      // If endpoint doesn't exist or returns error, return empty array
-      return [];
+      // Check if it's a 404 (no collections yet) vs a real API error
+      const statusMatch = error.message.match(/API Error (\d+)/);
+      const statusCode = statusMatch ? parseInt(statusMatch[1]) : null;
+      
+      if (statusCode === 404) {
+        // No collections generated yet - this is expected for new specs
+        return [];
+      }
+      
+      // For other errors, log and re-throw
+      console.error(`  Error fetching spec collections: ${error.message}`);
+      throw error;
     }
   }
 
@@ -159,43 +170,94 @@ class SpecHubClient {
   }
 
   /**
-   * Wait for collection sync to complete
+   * Wait for collection sync to complete with exponential backoff
    */
-  async waitForCollectionSync(collectionId, maxAttempts = 10) {
+  async waitForCollectionSync(collectionUid, maxAttempts = 15) {
+    let delay = 2000; // Start with 2 seconds
+    
     for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await this.sleep(delay);
 
-      // Check if collection still exists and is accessible
+      // Check if collection is accessible and stable
       try {
-        const collection = await this.getCollection(collectionId);
-        if (collection) {
-          return;
+        const collection = await this.getCollectionWithRetry(collectionUid);
+        if (collection && collection.collection) {
+          // Collection exists and is accessible - sync is likely complete
+          return collection;
         }
       } catch (error) {
         // Collection might be temporarily unavailable during sync
         console.log(`  Waiting for sync... (${i + 1}/${maxAttempts})`);
       }
+      
+      // Exponential backoff: 2s, 3s, 4.5s, 6.75s... (max 10s)
+      delay = Math.min(delay * 1.5, 10000);
     }
 
-    console.warn(`  Sync wait timed out, but collection should be updated`);
+    throw new Error(`Collection sync timed out after ${maxAttempts} attempts`);
   }
 
   /**
-   * Wait for collection generation to complete
+   * Wait for collection generation to complete with exponential backoff
    */
-  async waitForCollectionGeneration(name, maxAttempts = 10) {
+  async waitForCollectionGeneration(name, maxAttempts = 15) {
+    let delay = 2000; // Start with 2 seconds
+    
     for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await this.sleep(delay);
 
-      const collections = await this.request('GET', `/collections?workspace=${this.workspaceId}`);
-      const collection = collections.collections?.find(c => c.name === name);
+      try {
+        const collections = await this.request('GET', `/collections?workspace=${this.workspaceId}`);
+        const collection = collections.collections?.find(c => c.name === name);
 
-      if (collection) {
-        return;
+        if (collection) {
+          return collection;
+        }
+      } catch (error) {
+        console.log(`  Waiting for generation... (${i + 1}/${maxAttempts})`);
       }
+      
+      // Exponential backoff
+      delay = Math.min(delay * 1.5, 10000);
     }
 
-    throw new Error(`Collection generation timed out after ${maxAttempts * 2} seconds`);
+    throw new Error(`Collection generation timed out after ${maxAttempts} attempts`);
+  }
+
+  /**
+   * Get collection with retry logic for transient failures
+   */
+  async getCollectionWithRetry(collectionUid, maxRetries = 3) {
+    let lastError;
+    
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await this.getCollection(collectionUid);
+      } catch (error) {
+        lastError = error;
+        
+        // Only retry on 5xx errors or network issues
+        const statusCode = error.message.match(/API Error (\d+)/)?.[1];
+        if (statusCode && parseInt(statusCode) < 500) {
+          throw error; // Don't retry 4xx errors
+        }
+        
+        if (i < maxRetries - 1) {
+          const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+          console.log(`  Retrying collection fetch... (${i + 1}/${maxRetries})`);
+          await this.sleep(delay);
+        }
+      }
+    }
+    
+    throw lastError;
+  }
+
+  /**
+   * Sleep utility for async delays
+   */
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

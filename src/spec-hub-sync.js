@@ -54,11 +54,11 @@ function logInfo(message) {
 function parseArgs() {
   const args = process.argv.slice(2);
   const options = {
-    spec: null,
-    workspaceId: process.env.POSTMAN_WORKSPACE_ID,
-    apiKey: process.env.POSTMAN_API_KEY,
-    dryRun: false,
-    testLevel: 'all', // 'smoke', 'contract', or 'all'
+    spec: process.env.SPEC_FILE || null,
+    workspaceId: process.env.POSTMAN_WORKSPACE_ID || null,
+    apiKey: process.env.POSTMAN_API_KEY || null,
+    dryRun: process.env.DRY_RUN === 'true' || false,
+    testLevel: process.env.TEST_LEVEL || 'all', // 'smoke', 'contract', or 'all'
     help: false
   };
 
@@ -114,6 +114,9 @@ Options:
 Environment Variables:
   POSTMAN_API_KEY       Required - Your Postman API key
   POSTMAN_WORKSPACE_ID  Required - Target workspace ID
+  SPEC_FILE             Path to OpenAPI spec file (alternative to --spec)
+  TEST_LEVEL            Test level: smoke, contract, or all (default: all)
+  DRY_RUN               Set to 'true' to validate without uploading
 
 Examples:
   # Generate all collections (docs + smoke + contract)
@@ -220,30 +223,25 @@ async function sync(options) {
   logStep('Step 4', 'Generating/syncing main collection from Spec Hub');
   const docsCollectionName = specName;  // Default/clean collection (no suffix)
   let docsCollectionUid = null;
-  try {
-    docsCollectionUid = await client.generateOrSyncCollection(specId, docsCollectionName, {
-      enableOptionalParameters: true,
-      folderStrategy: 'Tags'
-    });
-    logSuccess(`Docs collection: ${docsCollectionUid}`);
-    generatedCollections.push({ name: docsCollectionName, uid: docsCollectionUid, type: 'main' });
+  
+  // Main collection is critical - fail fast if it fails
+  docsCollectionUid = await client.generateOrSyncCollection(specId, docsCollectionName, {
+    enableOptionalParameters: true,
+    folderStrategy: 'Tags'
+  });
+  logSuccess(`Docs collection: ${docsCollectionUid}`);
+  generatedCollections.push({ name: docsCollectionName, uid: docsCollectionUid, type: 'main' });
 
-    // Apply tags
-    try {
-      await client.applyCollectionTags(docsCollectionUid, 'main');
-      logSuccess(`Tags applied: generated, docs`);
-    } catch (tagError) {
-      logInfo(`Note: Could not apply tags: ${tagError.message}`);
-    }
-  } catch (error) {
-    logError(`Failed to generate docs collection: ${error.message}`);
+  // Apply tags (non-critical, continue on failure)
+  try {
+    await client.applyCollectionTags(docsCollectionUid, 'main');
+    logSuccess(`Tags applied: generated, docs`);
+  } catch (tagError) {
+    logInfo(`Note: Could not apply tags: ${tagError.message}`);
   }
 
   // Step 5: Generate or sync smoke test collection
   if (generateSmoke) {
-    logInfo('Waiting for Spec Hub...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
     logStep('Step 5', 'Generating/syncing smoke test collection from Spec Hub');
     const smokeCollectionName = `${specName} - Smoke Tests`;
     const smokeCollectionUid = await client.generateOrSyncCollection(specId, smokeCollectionName, {
@@ -272,9 +270,6 @@ async function sync(options) {
 
   // Step 6: Generate or sync contract test collection
   if (generateContract) {
-    logInfo('Waiting for Spec Hub...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
     const contractStepNum = generateSmoke ? '7' : '5';
     logStep(`Step ${contractStepNum}`, 'Generating/syncing contract test collection from Spec Hub');
     const contractCollectionName = `${specName} - Contract Tests`;

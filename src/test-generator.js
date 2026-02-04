@@ -186,6 +186,21 @@ function generateContractTestScript(endpoint) {
       tests.push(`});`);
       tests.push('');
     }
+
+    // 6. Advanced schema validations (enum, format, patterns, constraints)
+    const advancedValidations = generateAdvancedSchemaValidations(schemaInfo.schema);
+    if (advancedValidations.length > 0) {
+      tests.push(`// Advanced schema validations (enum, format, constraints)`);
+      tests.push(`pm.test("Field values match schema constraints", function () {`);
+      tests.push(`    const jsonData = pm.response.json();`);
+      tests.push(`    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;`);
+      tests.push(`    `);
+      for (const validation of advancedValidations) {
+        tests.push(`    ${validation}`);
+      }
+      tests.push(`});`);
+      tests.push('');
+    }
   }
 
   // 6. Error response structure validation
@@ -203,6 +218,141 @@ function generateContractTestScript(endpoint) {
   }
 
   return tests;
+}
+
+/**
+ * Generate advanced schema validation assertions
+ * Validates: enum, format, pattern, numeric constraints, string constraints
+ * @param {Object} schema - JSON Schema object
+ * @param {string} path - Current property path (for nested objects)
+ * @returns {Array} Array of assertion strings
+ */
+function generateAdvancedSchemaValidations(schema, path = 'dataToCheck') {
+  const validations = [];
+  
+  if (!schema || typeof schema !== 'object') {
+    return validations;
+  }
+
+  // Handle array items
+  if (schema.type === 'array' && schema.items) {
+    validations.push(...generateAdvancedSchemaValidations(schema.items, `${path}[0]`));
+    
+    // Array constraints
+    if (schema.minItems !== undefined) {
+      validations.push(`pm.expect(${path}).to.have.length.of.at.least(${schema.minItems});`);
+    }
+    if (schema.maxItems !== undefined) {
+      validations.push(`pm.expect(${path}).to.have.length.of.at.most(${schema.maxItems});`);
+    }
+    if (schema.uniqueItems) {
+      validations.push(`// Note: uniqueItems validation requires deep comparison`);
+    }
+    return validations;
+  }
+
+  // Handle object properties
+  if (schema.type === 'object' && schema.properties) {
+    for (const [propName, propSchema] of Object.entries(schema.properties)) {
+      const propPath = `${path}['${propName}']`;
+      
+      // Only validate if property exists (required check is separate)
+      validations.push(`if (${propPath} !== undefined) {`);
+      
+      // Type validation
+      if (propSchema.type) {
+        const typeMap = {
+          'string': 'string',
+          'integer': 'number',
+          'number': 'number',
+          'boolean': 'boolean',
+          'array': 'array',
+          'object': 'object'
+        };
+        if (typeMap[propSchema.type]) {
+          validations.push(`    pm.expect(${propPath}).to.be.a('${typeMap[propSchema.type]}');`);
+        }
+      }
+      
+      // Enum validation
+      if (propSchema.enum && propSchema.enum.length > 0) {
+        const enumValues = propSchema.enum.map(v => typeof v === 'string' ? `'${v}'` : v).join(', ');
+        validations.push(`    pm.expect(${propPath}).to.be.oneOf([${enumValues}]);`);
+      }
+      
+      // Format validation (strings)
+      if (propSchema.format && propSchema.type === 'string') {
+        const formatPattern = getFormatPattern(propSchema.format);
+        if (formatPattern) {
+          validations.push(`    pm.expect(${propPath}).to.match(${formatPattern});`);
+        }
+      }
+      
+      // Pattern validation (regex)
+      if (propSchema.pattern && propSchema.type === 'string') {
+        const escapedPattern = propSchema.pattern.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        validations.push(`    pm.expect(${propPath}).to.match(/${escapedPattern}/);`);
+      }
+      
+      // String constraints
+      if (propSchema.type === 'string') {
+        if (propSchema.minLength !== undefined) {
+          validations.push(`    pm.expect(${propPath}).to.have.length.of.at.least(${propSchema.minLength});`);
+        }
+        if (propSchema.maxLength !== undefined) {
+          validations.push(`    pm.expect(${propPath}).to.have.length.of.at.most(${propSchema.maxLength});`);
+        }
+      }
+      
+      // Numeric constraints
+      if (propSchema.type === 'number' || propSchema.type === 'integer') {
+        if (propSchema.minimum !== undefined) {
+          const operator = propSchema.exclusiveMinimum ? '>' : '>=';
+          validations.push(`    pm.expect(${propPath}).to.be${operator === '>' ? '.above' : '.at.least'}(${propSchema.minimum});`);
+        }
+        if (propSchema.maximum !== undefined) {
+          const operator = propSchema.exclusiveMaximum ? '<' : '<=';
+          validations.push(`    pm.expect(${propPath}).to.be${operator === '<' ? '.below' : '.at.most'}(${propSchema.maximum});`);
+        }
+        if (propSchema.multipleOf !== undefined) {
+          validations.push(`    pm.expect(${propPath} % ${propSchema.multipleOf}).to.equal(0);`);
+        }
+      }
+      
+      // Nested object/array validation
+      if (propSchema.type === 'object' || propSchema.type === 'array') {
+        const nested = generateAdvancedSchemaValidations(propSchema, propPath);
+        for (const nestedValidation of nested) {
+          validations.push(`    ${nestedValidation}`);
+        }
+      }
+      
+      validations.push(`}`);
+    }
+  }
+  
+  return validations;
+}
+
+/**
+ * Get regex pattern for common OpenAPI formats
+ * @param {string} format - OpenAPI format string
+ * @returns {string|null} Regex pattern string for Postman test
+ */
+function getFormatPattern(format) {
+  const patterns = {
+    'date': '/^\\d{4}-\\d{2}-\\d{2}$/',
+    'date-time': '/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/',
+    'email': '/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/',
+    'uuid': '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+    'uri': '/^https?:\\/\\/.+/',
+    'hostname': '/^[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?)*$/',
+    'ipv4': '/^(\\d{1,3}\\.){3}\\d{1,3}$/',
+    'ipv6': '/^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/',
+    'byte': '/^[A-Za-z0-9+\\/]*={0,2}$/'
+  };
+  
+  return patterns[format] || null;
 }
 
 /**
