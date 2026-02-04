@@ -435,6 +435,132 @@ class SpecHubClient {
 
     return this.updateCollectionTags(collectionUid, tags);
   }
+
+  // ============================================================
+  // BIDIRECTIONAL SYNC METHODS
+  // ============================================================
+
+  /**
+   * Get all collections in workspace with metadata (for change detection)
+   * Returns uid, name, and updatedAt for efficient polling
+   */
+  async getWorkspaceCollections() {
+    const result = await this.request('GET', `/collections?workspace=${this.workspaceId}`);
+    return result.collections || [];
+  }
+
+  /**
+   * Get all environments in workspace with metadata (for change detection)
+   */
+  async getWorkspaceEnvironments() {
+    const result = await this.request('GET', `/environments?workspace=${this.workspaceId}`);
+    return result.environments || [];
+  }
+
+  /**
+   * Get environment by UID
+   */
+  async getEnvironment(environmentUid) {
+    return this.request('GET', `/environments/${environmentUid}`);
+  }
+
+  /**
+   * Convert collection back to OpenAPI via Postman API
+   * Uses Postman's native transformation - returns OpenAPI spec derived from collection
+   * @param {string} collectionUid - Collection UID to transform
+   * @returns {object} Parsed OpenAPI specification
+   */
+  async getCollectionAsOpenApi(collectionUid) {
+    const result = await this.request(
+      'GET',
+      `/collections/${collectionUid}/transformations?format=openapi3`
+    );
+    // result.output is a stringified JSON
+    return typeof result.output === 'string'
+      ? JSON.parse(result.output)
+      : result.output;
+  }
+
+  /**
+   * Create a fork of a collection
+   * @param {string} collectionUid - Source collection UID
+   * @param {string} forkLabel - Label for the fork
+   * @param {string} targetWorkspaceId - Optional target workspace (defaults to current)
+   */
+  async forkCollection(collectionUid, forkLabel, targetWorkspaceId = null) {
+    const workspaceParam = targetWorkspaceId || this.workspaceId;
+
+    return this.request(
+      'POST',
+      `/collections/fork/${collectionUid}?workspace=${workspaceParam}`,
+      { label: forkLabel }
+    );
+  }
+
+  /**
+   * List all forks of a collection
+   * @param {string} collectionUid - Collection UID to list forks for
+   */
+  async getCollectionForks(collectionUid) {
+    const result = await this.request('GET', `/collections/${collectionUid}/forks`);
+    return result.forks || [];
+  }
+
+  /**
+   * Create a pull request from fork to parent collection
+   * @param {string} destinationCollectionUid - Parent collection UID (PR target)
+   * @param {string} sourceCollectionUid - Fork collection UID (PR source)
+   * @param {object} options - PR options (title, description)
+   */
+  async createPullRequest(destinationCollectionUid, sourceCollectionUid, options = {}) {
+    return this.request(
+      'POST',
+      `/collections/${destinationCollectionUid}/pull-requests`,
+      {
+        title: options.title || 'Sync changes from fork',
+        description: options.description || '',
+        source: sourceCollectionUid
+      }
+    );
+  }
+
+  /**
+   * Get pull requests for a collection
+   * @param {string} collectionUid - Collection UID
+   * @param {string} status - Filter by status: 'open', 'merged', 'declined'
+   */
+  async getPullRequests(collectionUid, status = 'open') {
+    const result = await this.request(
+      'GET',
+      `/collections/${collectionUid}/pull-requests?status=${status}`
+    );
+    return result.pullRequests || result.data || [];
+  }
+
+  /**
+   * Merge a pull request
+   * @param {string} collectionUid - Collection UID (PR destination)
+   * @param {string} pullRequestId - Pull request ID to merge
+   */
+  async mergePullRequest(collectionUid, pullRequestId) {
+    return this.request(
+      'POST',
+      `/collections/${collectionUid}/pull-requests/${pullRequestId}/merge`
+    );
+  }
+
+  /**
+   * Decline a pull request
+   * @param {string} collectionUid - Collection UID (PR destination)
+   * @param {string} pullRequestId - Pull request ID to decline
+   */
+  async declinePullRequest(collectionUid, pullRequestId) {
+    return this.request(
+      'PUT',
+      `/collections/${collectionUid}/pull-requests/${pullRequestId}`,
+      { status: 'declined' }
+    );
+  }
 }
 
 export default SpecHubClient;

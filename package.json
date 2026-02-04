@@ -1,28 +1,41 @@
 {
   "name": "oas-contract-test-generator",
-  "version": "1.0.0",
-  "description": "Generate Postman collections with contract tests from OpenAPI specs via Spec Hub",
-  "main": "src/spec-hub-sync.js",
+  "version": "2.0.0",
+  "description": "Bi-directional OpenAPI <-> Postman sync with contract test generation",
+  "main": "src/cli.js",
+  "bin": {
+    "spec-sync": "./src/cli.js"
+  },
   "type": "module",
   "scripts": {
+    "sync": "node src/cli.js bidirectional",
+    "sync:forward": "node src/cli.js forward",
+    "sync:repo": "node src/cli.js repo",
+    "sync:reverse": "node src/cli.js reverse",
+    "sync:status": "node src/cli.js status",
     "sync:spec-hub": "node src/spec-hub-sync.js",
     "sync:spec-hub:smoke": "node src/spec-hub-sync.js --test-level smoke",
     "sync:spec-hub:contract": "node src/spec-hub-sync.js --test-level contract",
     "validate:spec": "postman spec lint",
     "demo": "npm run sync:spec-hub -- --spec specs/sample-api.yaml",
     "cleanup:collections": "node scripts/cleanup-collections.js",
-    "cleanup:specs": "node scripts/cleanup-specs.js"
+    "cleanup:specs": "node scripts/cleanup-specs.js",
+    "test": "node --test src/__tests__/*.test.js"
   },
   "keywords": [
     "openapi",
     "postman",
     "contract-testing",
-    "api-testing"
+    "api-testing",
+    "bidirectional-sync",
+    "spec-hub"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
+    "commander": "^12.0.0",
+    "js-yaml": "^4.1.0",
     "yaml": "^2.7.0"
   },
   "devDependencies": {},

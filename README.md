@@ -96,6 +96,35 @@ Options:
   --help, -h        Show help message
 ```
 
+### Bidirectional Sync CLI
+
+The unified CLI provides full bidirectional sync capabilities:
+
+```bash
+# Forward sync (spec -> Postman)
+node src/cli.js forward --spec specs/api.yaml
+
+# Export Postman artifacts to repo
+node src/cli.js repo --spec specs/api.yaml --output .
+
+# Reverse sync (Postman -> spec, descriptions/examples only)
+node src/cli.js reverse --spec specs/api.yaml --collection <uid>
+
+# Full bidirectional workflow
+node src/cli.js bidi --spec specs/api.yaml --output .
+
+# Check sync status
+node src/cli.js status --output .
+```
+
+**NPM Script Shortcuts:**
+```bash
+npm run sync:forward -- --spec specs/api.yaml
+npm run sync:repo -- --spec specs/api.yaml --output .
+npm run sync:reverse -- --spec specs/api.yaml --collection <uid>
+npm run sync:status -- --output .
+```
+
 ### Legacy Local Generation
 
 For standalone use without Spec Hub:
@@ -141,6 +170,8 @@ npm run sync:spec-hub -- --spec specs/sample-api.yaml
 
 ## 🔧 Architecture
 
+### Forward Sync (Spec to Postman)
+
 ```
 OpenAPI Spec (GitHub)
     │
@@ -155,6 +186,34 @@ Upload to Spec Hub
                     │
                     └──▶ Tests persist on spec updates
 ```
+
+### Bidirectional Sync
+
+```
+GIT REPOSITORY                         POSTMAN CLOUD
+├── specs/api.yaml (Source of Truth)   ├── Spec Hub (OpenAPI)
+├── postman/                           ├── Collections (Main, Smoke, Contract)
+│   ├── collections/*.json             └── Team Forks -> Pull Requests
+│   ├── environments/*.json
+│   └── .sync-manifest.json
+         │                                      │
+         │ Forward Sync ──────────────────────▶ │
+         │                                      │
+         │ ◀────────────────────── Repo Sync   │
+         │                                      │
+         │ ◀──────────────── Reverse Sync      │
+         │   (descriptions, examples only)      │
+```
+
+**Change Classification:**
+| Change Type | Spec -> Postman | Postman -> Spec | Rationale |
+|-------------|-----------------|-----------------|-----------|
+| Endpoints/paths | Always | Never | Contract integrity |
+| Schemas | Always | Never | Contract integrity |
+| Security schemes | Always | Never | Safety |
+| Descriptions | Initial | Enhanced | Docs evolve |
+| Examples | Initial | Enhanced | Real-world data |
+| Tests | N/A | x-postman-tests | Collection-only |
 
 ## ☁️ Spec Hub Workflow
 
@@ -405,8 +464,13 @@ jobs:
 ```
 demo/
 ├── src/
-│   ├── spec-hub-sync.js        # ⭐ Main orchestrator (USE THIS)
-│   ├── spec-hub-client.js      # Spec Hub API client
+│   ├── cli.js                  # Unified CLI for bidirectional sync
+│   ├── spec-hub-sync.js        # Forward sync orchestrator
+│   ├── spec-hub-client.js      # Spec Hub API client (with fork/PR support)
+│   ├── repo-sync.js            # Export Postman artifacts to repo
+│   ├── reverse-sync.js         # Reverse sync (Postman -> spec)
+│   ├── change-detector.js      # Change classification for bidirectional sync
+│   ├── spec-merge.js           # 3-way merge for spec updates
 │   ├── test-generator.js       # Contract/smoke test generator
 │   ├── environment-generator.js # Multi-environment generator
 │   └── parser.js               # OpenAPI parser
@@ -415,12 +479,19 @@ demo/
 │   └── cleanup-specs.js        # Cleanup orphaned specs
 ├── specs/
 │   └── sample-api.yaml         # Demo OpenAPI spec
+├── postman/                    # Git-tracked Postman artifacts (after repo sync)
+│   ├── collections/            # Exported collections (diff-friendly JSON)
+│   ├── environments/           # Exported environments (secrets redacted)
+│   └── .sync-manifest.json     # Sync state for change detection
+├── .github/workflows/
+│   ├── contract-tests.yml      # Test execution workflow
+│   └── sync.yml                # Bidirectional sync workflow (hourly)
 ├── package.json
 ├── README.md
 └── CLAUDE.md
 ```
 
-> **Note:** Legacy files (`src/index.js`, `src/api-uploader.js`, `src/builder.js`, `src/generator.js`) are deprecated and kept for reference only. Use `src/spec-hub-sync.js` for all new work.
+> **Note:** Legacy files (`src/index.js`, `src/api-uploader.js`, `src/builder.js`, `src/generator.js`) are deprecated and kept for reference only.
 
 ### Available Scripts
 

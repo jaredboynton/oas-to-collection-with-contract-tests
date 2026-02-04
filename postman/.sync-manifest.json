@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "lastSync": "2026-02-04T07:48:37.686Z",
+  "collections": {
+    "17929829-67bb1b61-c4fd-4ed8-9459-43b3b8481d9e": {
+      "type": "main",
+      "filename": "task-management-api.collection.json",
+      "hash": "6bab33da59bb",
+      "updatedAt": "2026-02-04T06:03:45.000Z",
+      "syncedAt": "2026-02-04T07:48:37.686Z"
+    },
+    "17929829-c0e8f9e8-d8ab-4dfa-8713-7671848e667b": {
+      "type": "contract",
+      "filename": "task-management-api-contract.collection.json",
+      "hash": "894199aacef7",
+      "updatedAt": "2026-02-04T06:03:13.000Z",
+      "syncedAt": "2026-02-04T07:48:37.686Z"
+    },
+    "17929829-0dd01e53-6869-48c4-b746-9daa32438582": {
+      "type": "smoke",
+      "filename": "task-management-api-smoke.collection.json",
+      "hash": "4e82ff73f7b6",
+      "updatedAt": "2026-02-04T06:03:54.000Z",
+      "syncedAt": "2026-02-04T07:48:37.686Z"
+    }
+  },
+  "environments": {
+    "17929829-3f962d6e-4566-4501-b0ed-635119eaa54f": {
+      "name": "Task Management API - Production server",
+      "filename": "task-management-api-production-server.environment.json",
+      "hash": "9b16e0e7469c",
+      "updatedAt": "2026-02-04T06:03:55.000Z",
+      "syncedAt": "2026-02-04T07:48:37.686Z"
+    },
+    "17929829-b25f8011-42f6-4727-8698-7cfbaf571f03": {
+      "name": "Task Management API - Staging server",
+      "filename": "task-management-api-staging-server.environment.json",
+      "hash": "236f39b17af0",
+      "updatedAt": "2026-02-04T06:03:55.000Z",
+      "syncedAt": "2026-02-04T07:48:37.686Z"
+    }
+  },
+  "specPath": "specs/sample-api.yaml",
+  "workspaceId": "06d2843a-af55-4443-a628-83a45a979403"
+}

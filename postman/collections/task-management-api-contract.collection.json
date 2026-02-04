@@ -1,0 +1,1899 @@
+{
+  "auth": {
+    "bearer": [
+      {
+        "key": "token",
+        "type": "string",
+        "value": "{{bearerToken}}"
+      }
+    ],
+    "type": "bearer"
+  },
+  "info": {
+    "description": "A sample API for demonstrating spec-derived contract test generation.\n\nThis API demonstrates:\n- CRUD operations with full request/response schemas\n- Multiple response codes (200, 201, 400, 404)\n- Path and query parameters\n- Request body validation\n- Response examples\n- Required field validation\n\n\nContact Support:\n Name: API Support\n Email: api@example.com",
+    "name": "Task Management API - Contract Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: GET /tasks",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Content-Type validation",
+                  "pm.test(\"Content-Type is application/json\", function () {",
+                  "    pm.response.to.have.header(\"Content-Type\");",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\");",
+                  "    pm.expect(contentType).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "// JSON Schema validation",
+                  "pm.test(\"Response matches schema structure\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Basic type validation",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Required field validation",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    pm.expect(dataToCheck).to.have.property('data');",
+                  "    pm.expect(dataToCheck).to.have.property('pagination');",
+                  "});",
+                  "",
+                  "// Advanced schema validations (enum, format, constraints)",
+                  "pm.test(\"Field values match schema constraints\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    if (dataToCheck['data'] !== undefined) {",
+                  "        pm.expect(dataToCheck['data']).to.be.a('array');",
+                  "        if (dataToCheck['data'][0]['id'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['id']).to.be.a('string');",
+                  "        }",
+                  "        if (dataToCheck['data'][0]['title'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['title']).to.be.a('string');",
+                  "            pm.expect(dataToCheck['data'][0]['title']).to.have.length.of.at.least(1);",
+                  "            pm.expect(dataToCheck['data'][0]['title']).to.have.length.of.at.most(200);",
+                  "        }",
+                  "        if (dataToCheck['data'][0]['description'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['description']).to.be.a('string');",
+                  "            pm.expect(dataToCheck['data'][0]['description']).to.have.length.of.at.most(2000);",
+                  "        }",
+                  "        if (dataToCheck['data'][0]['status'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['status']).to.be.a('string');",
+                  "            pm.expect(dataToCheck['data'][0]['status']).to.be.oneOf(['pending', 'in_progress', 'completed']);",
+                  "        }",
+                  "        if (dataToCheck['data'][0]['priority'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['priority']).to.be.a('string');",
+                  "            pm.expect(dataToCheck['data'][0]['priority']).to.be.oneOf(['low', 'medium', 'high', 'critical']);",
+                  "        }",
+                  "        if (dataToCheck['data'][0]['createdAt'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['createdAt']).to.be.a('string');",
+                  "            pm.expect(dataToCheck['data'][0]['createdAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "        }",
+                  "        if (dataToCheck['data'][0]['updatedAt'] !== undefined) {",
+                  "            pm.expect(dataToCheck['data'][0]['updatedAt']).to.be.a('string');",
+                  "            pm.expect(dataToCheck['data'][0]['updatedAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "        }",
+                  "    }",
+                  "    if (dataToCheck['pagination'] !== undefined) {",
+                  "        pm.expect(dataToCheck['pagination']).to.be.a('object');",
+                  "        if (dataToCheck['pagination']['total'] !== undefined) {",
+                  "            pm.expect(dataToCheck['pagination']['total']).to.be.a('number');",
+                  "        }",
+                  "        if (dataToCheck['pagination']['limit'] !== undefined) {",
+                  "            pm.expect(dataToCheck['pagination']['limit']).to.be.a('number');",
+                  "        }",
+                  "        if (dataToCheck['pagination']['offset'] !== undefined) {",
+                  "            pm.expect(dataToCheck['pagination']['offset']).to.be.a('number');",
+                  "        }",
+                  "        if (dataToCheck['pagination']['hasMore'] !== undefined) {",
+                  "            pm.expect(dataToCheck['pagination']['hasMore']).to.be.a('boolean');",
+                  "        }",
+                  "    }",
+                  "});",
+                  "",
+                  "// Error response structure validation",
+                  "pm.test(\"Error responses have proper structure\", function () {",
+                  "    if (pm.response.code >= 400) {",
+                  "        const jsonData = pm.response.json();",
+                  "        const hasErrorField = jsonData.hasOwnProperty('error') || jsonData.hasOwnProperty('message') || jsonData.hasOwnProperty('detail');",
+                  "        pm.expect(hasErrorField).to.be.true;",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "List all tasks",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "description": "Retrieve a paginated list of tasks. Supports filtering by status\nand sorting by various fields.\n",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ],
+              "query": [
+                {
+                  "description": "Filter by task status",
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "description": "Number of items per page",
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "description": "Number of items to skip",
+                  "key": "offset",
+                  "value": "0"
+                }
+              ],
+              "raw": "{{baseUrl}}/tasks?status=pending&limit=10&offset=0"
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"task-001\",\n      \"title\": \"Complete API documentation\",\n      \"description\": \"Write comprehensive API docs\",\n      \"status\": \"in_progress\",\n      \"priority\": \"high\",\n      \"createdAt\": \"2024-01-15T10:00:00Z\",\n      \"updatedAt\": \"2024-01-15T14:30:00Z\"\n    },\n    {\n      \"id\": \"task-002\",\n      \"title\": \"Review pull requests\",\n      \"description\": \"Review team's PRs\",\n      \"status\": \"pending\",\n      \"priority\": \"medium\",\n      \"createdAt\": \"2024-01-15T11:00:00Z\",\n      \"updatedAt\": \"2024-01-15T11:00:00Z\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 2,\n    \"limit\": 10,\n    \"offset\": 0,\n    \"hasMore\": false\n  }\n}",
+              "code": 200,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Successfully retrieved list of tasks",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ],
+                  "query": [
+                    {
+                      "description": "Filter by task status",
+                      "key": "status",
+                      "value": "pending"
+                    },
+                    {
+                      "description": "Number of items per page",
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "description": "Number of items to skip",
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/tasks?status=pending&limit=10&offset=0"
+                }
+              },
+              "responseTime": null,
+              "status": "OK"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Invalid status value\",\n  \"code\": \"INVALID_PARAMETER\"\n}",
+              "code": 400,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Invalid query parameters",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ],
+                  "query": [
+                    {
+                      "description": "Filter by task status",
+                      "key": "status",
+                      "value": "pending"
+                    },
+                    {
+                      "description": "Number of items per page",
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "description": "Number of items to skip",
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/tasks?status=pending&limit=10&offset=0"
+                }
+              },
+              "responseTime": null,
+              "status": "Bad Request"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 401,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Unauthorized",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ],
+                  "query": [
+                    {
+                      "description": "Filter by task status",
+                      "key": "status",
+                      "value": "pending"
+                    },
+                    {
+                      "description": "Number of items per page",
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "description": "Number of items to skip",
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ],
+                  "raw": "{{baseUrl}}/tasks?status=pending&limit=10&offset=0"
+                }
+              },
+              "responseTime": null,
+              "status": "Unauthorized"
+            }
+          ]
+        },
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: POST /tasks",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Content-Type validation",
+                  "pm.test(\"Content-Type is application/json\", function () {",
+                  "    pm.response.to.have.header(\"Content-Type\");",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\");",
+                  "    pm.expect(contentType).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "// JSON Schema validation",
+                  "pm.test(\"Response matches schema structure\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Basic type validation",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Required field validation",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    pm.expect(dataToCheck).to.have.property('id');",
+                  "    pm.expect(dataToCheck).to.have.property('title');",
+                  "    pm.expect(dataToCheck).to.have.property('status');",
+                  "    pm.expect(dataToCheck).to.have.property('createdAt');",
+                  "    pm.expect(dataToCheck).to.have.property('updatedAt');",
+                  "});",
+                  "",
+                  "// Advanced schema validations (enum, format, constraints)",
+                  "pm.test(\"Field values match schema constraints\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    if (dataToCheck['id'] !== undefined) {",
+                  "        pm.expect(dataToCheck['id']).to.be.a('string');",
+                  "    }",
+                  "    if (dataToCheck['title'] !== undefined) {",
+                  "        pm.expect(dataToCheck['title']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.least(1);",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.most(200);",
+                  "    }",
+                  "    if (dataToCheck['description'] !== undefined) {",
+                  "        pm.expect(dataToCheck['description']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['description']).to.have.length.of.at.most(2000);",
+                  "    }",
+                  "    if (dataToCheck['status'] !== undefined) {",
+                  "        pm.expect(dataToCheck['status']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['status']).to.be.oneOf(['pending', 'in_progress', 'completed']);",
+                  "    }",
+                  "    if (dataToCheck['priority'] !== undefined) {",
+                  "        pm.expect(dataToCheck['priority']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['priority']).to.be.oneOf(['low', 'medium', 'high', 'critical']);",
+                  "    }",
+                  "    if (dataToCheck['createdAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['createdAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['createdAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "    if (dataToCheck['updatedAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['updatedAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['updatedAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "});",
+                  "",
+                  "// Error response structure validation",
+                  "pm.test(\"Error responses have proper structure\", function () {",
+                  "    if (pm.response.code >= 400) {",
+                  "        const jsonData = pm.response.json();",
+                  "        const hasErrorField = jsonData.hasOwnProperty('error') || jsonData.hasOwnProperty('message') || jsonData.hasOwnProperty('detail');",
+                  "        pm.expect(hasErrorField).to.be.true;",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "Create a new task",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"title\": \"Implement new feature\",\n  \"description\": \"Add user authentication\",\n  \"status\": \"pending\",\n  \"priority\": \"high\"\n}"
+            },
+            "description": "Create a new task with the provided details",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ],
+              "raw": "{{baseUrl}}/tasks"
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"task-003\",\n  \"title\": \"Implement new feature\",\n  \"description\": \"Add user authentication\",\n  \"status\": \"pending\",\n  \"priority\": \"high\",\n  \"createdAt\": \"2024-01-16T09:00:00Z\",\n  \"updatedAt\": \"2024-01-16T09:00:00Z\"\n}",
+              "code": 201,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task created successfully",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Implement new feature\",\n  \"description\": \"Add user authentication\",\n  \"status\": \"pending\",\n  \"priority\": \"high\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ],
+                  "raw": "{{baseUrl}}/tasks"
+                }
+              },
+              "responseTime": null,
+              "status": "Created"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\"\n}",
+              "code": 400,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Invalid request body",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Implement new feature\",\n  \"description\": \"Add user authentication\",\n  \"status\": \"pending\",\n  \"priority\": \"high\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ],
+                  "raw": "{{baseUrl}}/tasks"
+                }
+              },
+              "responseTime": null,
+              "status": "Bad Request"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 422,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Validation error",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Implement new feature\",\n  \"description\": \"Add user authentication\",\n  \"status\": \"pending\",\n  \"priority\": \"high\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks"
+                  ],
+                  "raw": "{{baseUrl}}/tasks"
+                }
+              },
+              "responseTime": null,
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)"
+            }
+          ]
+        },
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: GET /tasks/{taskId}",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Content-Type validation",
+                  "pm.test(\"Content-Type is application/json\", function () {",
+                  "    pm.response.to.have.header(\"Content-Type\");",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\");",
+                  "    pm.expect(contentType).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "// JSON Schema validation",
+                  "pm.test(\"Response matches schema structure\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Basic type validation",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Required field validation",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    pm.expect(dataToCheck).to.have.property('id');",
+                  "    pm.expect(dataToCheck).to.have.property('title');",
+                  "    pm.expect(dataToCheck).to.have.property('status');",
+                  "    pm.expect(dataToCheck).to.have.property('createdAt');",
+                  "    pm.expect(dataToCheck).to.have.property('updatedAt');",
+                  "});",
+                  "",
+                  "// Advanced schema validations (enum, format, constraints)",
+                  "pm.test(\"Field values match schema constraints\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    if (dataToCheck['id'] !== undefined) {",
+                  "        pm.expect(dataToCheck['id']).to.be.a('string');",
+                  "    }",
+                  "    if (dataToCheck['title'] !== undefined) {",
+                  "        pm.expect(dataToCheck['title']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.least(1);",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.most(200);",
+                  "    }",
+                  "    if (dataToCheck['description'] !== undefined) {",
+                  "        pm.expect(dataToCheck['description']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['description']).to.have.length.of.at.most(2000);",
+                  "    }",
+                  "    if (dataToCheck['status'] !== undefined) {",
+                  "        pm.expect(dataToCheck['status']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['status']).to.be.oneOf(['pending', 'in_progress', 'completed']);",
+                  "    }",
+                  "    if (dataToCheck['priority'] !== undefined) {",
+                  "        pm.expect(dataToCheck['priority']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['priority']).to.be.oneOf(['low', 'medium', 'high', 'critical']);",
+                  "    }",
+                  "    if (dataToCheck['createdAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['createdAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['createdAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "    if (dataToCheck['updatedAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['updatedAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['updatedAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "});",
+                  "",
+                  "// Error response structure validation",
+                  "pm.test(\"Error responses have proper structure\", function () {",
+                  "    if (pm.response.code >= 400) {",
+                  "        const jsonData = pm.response.json();",
+                  "        const hasErrorField = jsonData.hasOwnProperty('error') || jsonData.hasOwnProperty('message') || jsonData.hasOwnProperty('detail');",
+                  "        pm.expect(hasErrorField).to.be.true;",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "Get a specific task",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "description": "Retrieve detailed information about a specific task",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                ":taskId"
+              ],
+              "raw": "{{baseUrl}}/tasks/:taskId",
+              "variable": [
+                {
+                  "description": "Unique identifier of the task",
+                  "key": "taskId",
+                  "value": "task-001"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"task-001\",\n  \"title\": \"Complete API documentation\",\n  \"description\": \"Write comprehensive API docs\",\n  \"status\": \"pending\",\n  \"priority\": \"high\",\n  \"createdAt\": \"2024-01-15T10:00:00Z\",\n  \"updatedAt\": \"2024-01-15T10:00:00Z\"\n}",
+              "code": 200,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task found and returned",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "OK"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 401,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Unauthorized",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Unauthorized"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Not Found\",\n  \"message\": \"Task with ID 'task-999' not found\",\n  \"code\": \"RESOURCE_NOT_FOUND\"\n}",
+              "code": 404,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task not found",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Not Found"
+            }
+          ]
+        },
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: PUT /tasks/{taskId}",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Content-Type validation",
+                  "pm.test(\"Content-Type is application/json\", function () {",
+                  "    pm.response.to.have.header(\"Content-Type\");",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\");",
+                  "    pm.expect(contentType).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "// JSON Schema validation",
+                  "pm.test(\"Response matches schema structure\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Basic type validation",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Required field validation",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    pm.expect(dataToCheck).to.have.property('id');",
+                  "    pm.expect(dataToCheck).to.have.property('title');",
+                  "    pm.expect(dataToCheck).to.have.property('status');",
+                  "    pm.expect(dataToCheck).to.have.property('createdAt');",
+                  "    pm.expect(dataToCheck).to.have.property('updatedAt');",
+                  "});",
+                  "",
+                  "// Advanced schema validations (enum, format, constraints)",
+                  "pm.test(\"Field values match schema constraints\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    if (dataToCheck['id'] !== undefined) {",
+                  "        pm.expect(dataToCheck['id']).to.be.a('string');",
+                  "    }",
+                  "    if (dataToCheck['title'] !== undefined) {",
+                  "        pm.expect(dataToCheck['title']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.least(1);",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.most(200);",
+                  "    }",
+                  "    if (dataToCheck['description'] !== undefined) {",
+                  "        pm.expect(dataToCheck['description']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['description']).to.have.length.of.at.most(2000);",
+                  "    }",
+                  "    if (dataToCheck['status'] !== undefined) {",
+                  "        pm.expect(dataToCheck['status']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['status']).to.be.oneOf(['pending', 'in_progress', 'completed']);",
+                  "    }",
+                  "    if (dataToCheck['priority'] !== undefined) {",
+                  "        pm.expect(dataToCheck['priority']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['priority']).to.be.oneOf(['low', 'medium', 'high', 'critical']);",
+                  "    }",
+                  "    if (dataToCheck['createdAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['createdAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['createdAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "    if (dataToCheck['updatedAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['updatedAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['updatedAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "});",
+                  "",
+                  "// Error response structure validation",
+                  "pm.test(\"Error responses have proper structure\", function () {",
+                  "    if (pm.response.code >= 400) {",
+                  "        const jsonData = pm.response.json();",
+                  "        const hasErrorField = jsonData.hasOwnProperty('error') || jsonData.hasOwnProperty('message') || jsonData.hasOwnProperty('detail');",
+                  "        pm.expect(hasErrorField).to.be.true;",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "Update a task",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "body": {
+              "mode": "raw",
+              "options": {
+                "raw": {
+                  "headerFamily": "json",
+                  "language": "json"
+                }
+              },
+              "raw": "{\n  \"title\": \"Updated task title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\",\n  \"priority\": \"medium\"\n}"
+            },
+            "description": "Update all fields of an existing task",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                ":taskId"
+              ],
+              "raw": "{{baseUrl}}/tasks/:taskId",
+              "variable": [
+                {
+                  "description": "Unique identifier of the task",
+                  "key": "taskId",
+                  "value": "task-001"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"task-001\",\n  \"title\": \"Complete API documentation\",\n  \"status\": \"in_progress\",\n  \"createdAt\": \"2024-01-15T10:00:00Z\",\n  \"updatedAt\": \"2024-01-15T14:30:00Z\",\n  \"description\": \"Write comprehensive API docs\",\n  \"priority\": \"high\"\n}",
+              "code": 200,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task updated successfully",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Updated task title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\",\n  \"priority\": \"medium\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "OK"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 400,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Invalid request body",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Updated task title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\",\n  \"priority\": \"medium\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Bad Request"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 404,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task not found",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Updated task title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\",\n  \"priority\": \"medium\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Not Found"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 422,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Validation error",
+              "originalRequest": {
+                "body": {
+                  "mode": "raw",
+                  "options": {
+                    "raw": {
+                      "headerFamily": "json",
+                      "language": "json"
+                    }
+                  },
+                  "raw": "{\n  \"title\": \"Updated task title\",\n  \"description\": \"Updated description\",\n  \"status\": \"in_progress\",\n  \"priority\": \"medium\"\n}"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Unprocessable Entity (WebDAV) (RFC 4918)"
+            }
+          ]
+        },
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: DELETE /tasks/{taskId}",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Error response structure validation",
+                  "pm.test(\"Error responses have proper structure\", function () {",
+                  "    if (pm.response.code >= 400) {",
+                  "        const jsonData = pm.response.json();",
+                  "        const hasErrorField = jsonData.hasOwnProperty('error') || jsonData.hasOwnProperty('message') || jsonData.hasOwnProperty('detail');",
+                  "        pm.expect(hasErrorField).to.be.true;",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "Delete a task",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "description": "Permanently delete a task",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                ":taskId"
+              ],
+              "raw": "{{baseUrl}}/tasks/:taskId",
+              "variable": [
+                {
+                  "description": "Unique identifier of the task",
+                  "key": "taskId",
+                  "value": "task-001"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "text",
+              "body": null,
+              "code": 204,
+              "cookie": [],
+              "header": [],
+              "name": "Task deleted successfully",
+              "originalRequest": {
+                "header": [
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "No Content"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 401,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Unauthorized",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Unauthorized"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 404,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task not found",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Not Found"
+            }
+          ]
+        },
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: POST /tasks/{taskId}/complete",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Content-Type validation",
+                  "pm.test(\"Content-Type is application/json\", function () {",
+                  "    pm.response.to.have.header(\"Content-Type\");",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\");",
+                  "    pm.expect(contentType).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "// JSON Schema validation",
+                  "pm.test(\"Response matches schema structure\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Basic type validation",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Required field validation",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    pm.expect(dataToCheck).to.have.property('id');",
+                  "    pm.expect(dataToCheck).to.have.property('title');",
+                  "    pm.expect(dataToCheck).to.have.property('status');",
+                  "    pm.expect(dataToCheck).to.have.property('createdAt');",
+                  "    pm.expect(dataToCheck).to.have.property('updatedAt');",
+                  "});",
+                  "",
+                  "// Advanced schema validations (enum, format, constraints)",
+                  "pm.test(\"Field values match schema constraints\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    if (dataToCheck['id'] !== undefined) {",
+                  "        pm.expect(dataToCheck['id']).to.be.a('string');",
+                  "    }",
+                  "    if (dataToCheck['title'] !== undefined) {",
+                  "        pm.expect(dataToCheck['title']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.least(1);",
+                  "        pm.expect(dataToCheck['title']).to.have.length.of.at.most(200);",
+                  "    }",
+                  "    if (dataToCheck['description'] !== undefined) {",
+                  "        pm.expect(dataToCheck['description']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['description']).to.have.length.of.at.most(2000);",
+                  "    }",
+                  "    if (dataToCheck['status'] !== undefined) {",
+                  "        pm.expect(dataToCheck['status']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['status']).to.be.oneOf(['pending', 'in_progress', 'completed']);",
+                  "    }",
+                  "    if (dataToCheck['priority'] !== undefined) {",
+                  "        pm.expect(dataToCheck['priority']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['priority']).to.be.oneOf(['low', 'medium', 'high', 'critical']);",
+                  "    }",
+                  "    if (dataToCheck['createdAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['createdAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['createdAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "    if (dataToCheck['updatedAt'] !== undefined) {",
+                  "        pm.expect(dataToCheck['updatedAt']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['updatedAt']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "});",
+                  "",
+                  "// Error response structure validation",
+                  "pm.test(\"Error responses have proper structure\", function () {",
+                  "    if (pm.response.code >= 400) {",
+                  "        const jsonData = pm.response.json();",
+                  "        const hasErrorField = jsonData.hasOwnProperty('error') || jsonData.hasOwnProperty('message') || jsonData.hasOwnProperty('detail');",
+                  "        pm.expect(hasErrorField).to.be.true;",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "Mark task as complete",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "description": "Quickly mark a task as completed without full update",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                ":taskId",
+                "complete"
+              ],
+              "raw": "{{baseUrl}}/tasks/:taskId/complete",
+              "variable": [
+                {
+                  "description": "Unique identifier of the task",
+                  "key": "taskId",
+                  "value": "task-001"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"id\": \"task-001\",\n  \"title\": \"Complete API documentation\",\n  \"description\": \"Write comprehensive API docs\",\n  \"status\": \"completed\",\n  \"priority\": \"high\",\n  \"createdAt\": \"2024-01-15T10:00:00Z\",\n  \"updatedAt\": \"2024-01-16T10:00:00Z\"\n}",
+              "code": 200,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task marked as complete",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId",
+                    "complete"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId/complete",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "OK"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Bad Request\",\n  \"message\": \"Title is required\",\n  \"code\": \"VALIDATION_ERROR\",\n  \"details\": [\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    },\n    {\n      \"field\": \"title\",\n      \"message\": \"must not be empty\"\n    }\n  ]\n}",
+              "code": 404,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task not found",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId",
+                    "complete"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId/complete",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Not Found"
+            },
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"error\": \"Conflict\",\n  \"message\": \"Task is already completed\",\n  \"code\": \"ALREADY_COMPLETED\"\n}",
+              "code": 409,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "Task already completed",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "tasks",
+                    ":taskId",
+                    "complete"
+                  ],
+                  "raw": "{{baseUrl}}/tasks/:taskId/complete",
+                  "variable": [
+                    {
+                      "description": "Unique identifier of the task",
+                      "key": "taskId",
+                      "value": "task-001"
+                    }
+                  ]
+                }
+              },
+              "responseTime": null,
+              "status": "Conflict"
+            }
+          ]
+        }
+      ],
+      "name": "Tasks"
+    },
+    {
+      "item": [
+        {
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Contract tests for: GET /health",
+                  "// Comprehensive validation - generated from OpenAPI spec",
+                  "",
+                  "// Status code validation",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Performance baseline check",
+                  "pm.test(\"Response time is acceptable\", function () {",
+                  "    const threshold = parseInt(pm.environment.get(\"RESPONSE_TIME_THRESHOLD\") || \"2000\");",
+                  "    pm.expect(pm.response.responseTime).to.be.below(threshold);",
+                  "});",
+                  "",
+                  "// Content-Type validation",
+                  "pm.test(\"Content-Type is application/json\", function () {",
+                  "    pm.response.to.have.header(\"Content-Type\");",
+                  "    const contentType = pm.response.headers.get(\"Content-Type\");",
+                  "    pm.expect(contentType).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "// JSON Schema validation",
+                  "pm.test(\"Response matches schema structure\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "",
+                  "    // Basic type validation",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});",
+                  "",
+                  "// Required field validation",
+                  "pm.test(\"Response has required fields\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    pm.expect(dataToCheck).to.have.property('status');",
+                  "    pm.expect(dataToCheck).to.have.property('timestamp');",
+                  "});",
+                  "",
+                  "// Advanced schema validations (enum, format, constraints)",
+                  "pm.test(\"Field values match schema constraints\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const dataToCheck = Array.isArray(jsonData) ? (jsonData[0] || {}) : jsonData;",
+                  "",
+                  "    if (dataToCheck['status'] !== undefined) {",
+                  "        pm.expect(dataToCheck['status']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['status']).to.be.oneOf(['healthy', 'degraded']);",
+                  "    }",
+                  "    if (dataToCheck['timestamp'] !== undefined) {",
+                  "        pm.expect(dataToCheck['timestamp']).to.be.a('string');",
+                  "        pm.expect(dataToCheck['timestamp']).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/);",
+                  "    }",
+                  "    if (dataToCheck['version'] !== undefined) {",
+                  "        pm.expect(dataToCheck['version']).to.be.a('string');",
+                  "    }",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "name": "Health check",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "description": "Check API health status - no authentication required",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "url": {
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ],
+              "raw": "{{baseUrl}}/health"
+            }
+          },
+          "response": [
+            {
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"healthy\",\n  \"timestamp\": \"2024-01-16T10:00:00Z\",\n  \"version\": \"1.0.0\"\n}",
+              "code": 200,
+              "cookie": [],
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "name": "API is healthy",
+              "originalRequest": {
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": "Added as a part of security scheme: bearer",
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "url": {
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "health"
+                  ],
+                  "raw": "{{baseUrl}}/health"
+                }
+              },
+              "responseTime": null,
+              "status": "OK"
+            }
+          ]
+        }
+      ],
+      "name": "System"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "type": "any",
+      "value": "https://api.example.com/v1"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Task Management API - Production server",
+  "values": [
+    {
+      "enabled": true,
+      "key": "baseUrl",
+      "type": "default",
+      "value": "https://api.example.com/v1"
+    },
+    {
+      "enabled": true,
+      "key": "taskId",
+      "type": "default",
+      "value": "task-001"
+    },
+    {
+      "enabled": false,
+      "key": "status",
+      "type": "default",
+      "value": "pending"
+    },
+    {
+      "enabled": false,
+      "key": "limit",
+      "type": "default",
+      "value": "20"
+    },
+    {
+      "enabled": false,
+      "key": "offset",
+      "type": "default",
+      "value": "0"
+    },
+    {
+      "_redacted": true,
+      "enabled": true,
+      "key": "auth_token",
+      "type": "secret",
+      "value": ""
+    },
+    {
+      "enabled": true,
+      "key": "RESPONSE_TIME_THRESHOLD",
+      "type": "default",
+      "value": "2000"
+    }
+  ]
+}

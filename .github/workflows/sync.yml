@@ -1,0 +1,248 @@
+name: Spec Sync
+
+on:
+  push:
+    paths:
+      - 'specs/**'
+    branches:
+      - main
+  schedule:
+    # Check for Postman changes once per hour (2 API calls per workspace)
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      direction:
+        description: 'Sync direction'
+        required: true
+        default: 'forward'
+        type: choice
+        options:
+          - forward
+          - reverse
+          - bidirectional
+          - repo-only
+
+jobs:
+  # ============================================================
+  # DETECT CHANGES
+  # ============================================================
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      specs_changed: ${{ steps.changes.outputs.specs }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - id: changes
+        run: |
+          # shellcheck disable=SC2086
+          if git diff --name-only HEAD~1 HEAD | grep -q 'specs/'; then
+            echo "specs=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "specs=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ============================================================
+  # FORWARD SYNC (Spec -> Postman)
+  # ============================================================
+  forward-sync:
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.specs_changed == 'true' ||
+      github.event.inputs.direction == 'forward' ||
+      github.event.inputs.direction == 'bidirectional'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install oasdiff for breaking change detection
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/oasdiff/oasdiff/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Check for breaking changes
+        if: github.event_name == 'push'
+        run: |
+          shopt -s nullglob
+          for spec in specs/*.yaml specs/*.yml specs/*.json; do
+            if git show "HEAD~1:$spec" > /tmp/old-spec.yaml 2>/dev/null; then
+              echo "Checking $spec for breaking changes..."
+              oasdiff breaking /tmp/old-spec.yaml "$spec" --fail-on ERR || {
+                echo "::warning::Breaking changes detected in $spec"
+              }
+            fi
+          done
+
+      - name: Forward sync to Postman
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
+        run: |
+          shopt -s nullglob
+          for spec in specs/*.yaml specs/*.yml specs/*.json; do
+            echo "Syncing $spec..."
+            node src/spec-hub-sync.js --spec "$spec" --test-level all
+          done
+
+      - name: Export to repo
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
+        run: |
+          shopt -s nullglob
+          for spec in specs/*.yaml specs/*.yml specs/*.json; do
+            node src/cli.js repo --spec "$spec" --output .
+          done
+
+      - name: Commit exported artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: sync Postman artifacts [skip ci]'
+          file_pattern: 'postman/**'
+
+  # ============================================================
+  # REVERSE SYNC CHECK (Postman -> Spec)
+  # ============================================================
+  reverse-sync:
+    if: |
+      github.event_name == 'schedule' ||
+      github.event.inputs.direction == 'reverse' ||
+      github.event.inputs.direction == 'bidirectional'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for Postman changes
+        id: check-changes
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
+        run: |
+          # Efficient change detection using workspace-scoped endpoints
+          # Only 2 API calls: GET /collections?workspace={id} and GET /environments?workspace={id}
+          # Compare updatedAt timestamps against manifest - no need to fetch full content
+          if [ -f "postman/.sync-manifest.json" ]; then
+            OUTPUT=$(node src/cli.js status --output . 2>&1)
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "Changes Detected"; then
+              echo "changes=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "changes=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "No manifest found - skipping reverse sync check"
+            echo "changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Get main collection UID
+        if: steps.check-changes.outputs.changes == 'true'
+        id: get-collection
+        run: |
+          COLLECTION_UID=$(jq -r '.collections | keys[0]' postman/.sync-manifest.json)
+          SPEC_PATH=$(jq -r '.specPath' postman/.sync-manifest.json)
+          echo "collection_uid=$COLLECTION_UID" >> "$GITHUB_OUTPUT"
+          echo "spec_path=$SPEC_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Reverse sync (dry run)
+        if: steps.check-changes.outputs.changes == 'true'
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
+        run: |
+          node src/cli.js reverse \
+            --spec "${{ steps.get-collection.outputs.spec_path }}" \
+            --collection "${{ steps.get-collection.outputs.collection_uid }}" \
+            --dry-run
+
+      - name: Apply reverse sync
+        if: steps.check-changes.outputs.changes == 'true'
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
+        run: |
+          node src/cli.js reverse \
+            --spec "${{ steps.get-collection.outputs.spec_path }}" \
+            --collection "${{ steps.get-collection.outputs.collection_uid }}" \
+            --strategy spec-wins
+
+      - name: Create PR for reverse sync changes
+        if: steps.check-changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'feat: sync documentation from Postman'
+          title: '[Auto] Reverse sync from Postman'
+          body: |
+            This PR contains documentation improvements synced from Postman.
+
+            **What's included:**
+            - Updated descriptions
+            - New/improved examples
+            - Test scripts (as x-postman-tests extensions)
+
+            **What's NOT included (blocked by design):**
+            - Endpoint structure changes
+            - Schema modifications
+            - Security changes
+
+            Please review the changes before merging.
+          branch: auto/postman-reverse-sync
+          labels: |
+            auto-generated
+            documentation
+
+  # ============================================================
+  # REPO SYNC ONLY
+  # ============================================================
+  repo-sync:
+    if: github.event.inputs.direction == 'repo-only'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Export to repo
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+          POSTMAN_WORKSPACE_ID: ${{ secrets.POSTMAN_WORKSPACE_ID }}
+        run: |
+          shopt -s nullglob
+          for spec in specs/*.yaml specs/*.yml specs/*.json; do
+            node src/cli.js repo --spec "$spec" --output .
+          done
+
+      - name: Commit exported artifacts
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: export Postman artifacts [skip ci]'
+          file_pattern: 'postman/**'
