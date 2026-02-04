@@ -1,0 +1,103 @@
+{
+  "$schema": "./sync.config.schema.json",
+  "version": "1.0",
+
+  "workspace": "${POSTMAN_WORKSPACE_ID}",
+
+  "specs": {
+    "task-management-api": {
+      "path": "specs/sample-api.yaml",
+      "collections": {
+        "main": {
+          "namePattern": "{{spec.info.title}}",
+          "tags": ["generated", "docs"]
+        },
+        "smoke": {
+          "namePattern": "{{spec.info.title}} - Smoke Tests",
+          "tags": ["generated", "smoke"]
+        },
+        "contract": {
+          "namePattern": "{{spec.info.title}} - Contract Tests",
+          "tags": ["generated", "contract"]
+        }
+      }
+    }
+  },
+
+  "reverseSync": {
+    "enabled": true,
+    "conflictStrategy": "spec-wins",
+
+    "allowedFields": [
+      "info.description",
+      "tags.*.description",
+      "paths.*.*.summary",
+      "paths.*.*.description",
+      "paths.*.*.parameters.*.description",
+      "paths.*.*.requestBody.content.*.example",
+      "paths.*.*.requestBody.content.*.examples",
+      "paths.*.*.responses.*.description",
+      "paths.*.*.responses.*.content.*.example",
+      "paths.*.*.responses.*.content.*.examples"
+    ],
+
+    "blockedFields": [
+      "paths",
+      "components/schemas",
+      "components/securitySchemes",
+      "servers",
+      "security"
+    ],
+
+    "storeTestsAs": "x-postman-tests",
+    "requireApprovalFor": ["parameter.default"],
+    "autoCreatePR": true,
+    "prLabels": ["auto-generated", "documentation"]
+  },
+
+  "repoSync": {
+    "enabled": true,
+    "outputDir": "postman",
+    "format": "json",
+    "prettyPrint": true,
+    "sortKeys": true,
+
+    "collections": {
+      "directory": "collections",
+      "filenamePattern": "{{slug}}-{{type}}.collection.json"
+    },
+
+    "environments": {
+      "directory": "environments",
+      "filenamePattern": "{{slug}}-{{server}}.environment.json",
+      "redactSecrets": true,
+      "secretPatterns": [
+        "^api[_-]?key",
+        "^token",
+        "^secret",
+        "^password",
+        "^auth",
+        "^bearer"
+      ]
+    },
+
+    "manifest": {
+      "enabled": true,
+      "filename": ".sync-manifest.json"
+    }
+  },
+
+  "forkWorkflow": {
+    "enabled": true,
+    "forkNamePattern": "{{spec.info.title}} - Team Fork",
+    "targetWorkspace": null,
+    "autoMergeApproved": false,
+    "requireReviewers": []
+  },
+
+  "ci": {
+    "checkBreakingChanges": true,
+    "failOnBreaking": false,
+    "scheduleReverseSyncCheck": "0 * * * *"
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spec Sync Configuration",
+  "description": "Configuration for bi-directional OpenAPI <-> Postman sync",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "description": "Configuration schema version",
+      "enum": ["1.0"]
+    },
+    "workspace": {
+      "type": "string",
+      "description": "Postman workspace ID (supports ${ENV_VAR} syntax)"
+    },
+    "specs": {
+      "type": "object",
+      "description": "Spec configurations keyed by identifier",
+      "additionalProperties": {
+        "$ref": "#/definitions/specConfig"
+      }
+    },
+    "reverseSync": {
+      "$ref": "#/definitions/reverseSyncConfig"
+    },
+    "repoSync": {
+      "$ref": "#/definitions/repoSyncConfig"
+    },
+    "forkWorkflow": {
+      "$ref": "#/definitions/forkWorkflowConfig"
+    },
+    "ci": {
+      "$ref": "#/definitions/ciConfig"
+    }
+  },
+  "required": ["version", "workspace"],
+  "definitions": {
+    "specConfig": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to OpenAPI spec file"
+        },
+        "collections": {
+          "type": "object",
+          "properties": {
+            "main": { "$ref": "#/definitions/collectionConfig" },
+            "smoke": { "$ref": "#/definitions/collectionConfig" },
+            "contract": { "$ref": "#/definitions/collectionConfig" }
+          }
+        }
+      },
+      "required": ["path"]
+    },
+    "collectionConfig": {
+      "type": "object",
+      "properties": {
+        "namePattern": {
+          "type": "string",
+          "description": "Collection name pattern (supports {{spec.info.title}} etc.)"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tags to apply to this collection"
+        }
+      }
+    },
+    "reverseSyncConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable reverse sync functionality"
+        },
+        "conflictStrategy": {
+          "type": "string",
+          "enum": ["spec-wins", "collection-wins", "interactive"],
+          "description": "How to resolve conflicts between spec and collection"
+        },
+        "allowedFields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Field patterns that can flow from collection to spec"
+        },
+        "blockedFields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Field patterns that never reverse sync (structural)"
+        },
+        "storeTestsAs": {
+          "type": "string",
+          "description": "Vendor extension name for storing tests in spec"
+        },
+        "requireApprovalFor": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields that require manual approval before reverse sync"
+        },
+        "autoCreatePR": {
+          "type": "boolean",
+          "description": "Automatically create PR for reverse sync changes"
+        },
+        "prLabels": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Labels to apply to auto-created PRs"
+        }
+      }
+    },
+    "repoSyncConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable repo sync (export to filesystem)"
+        },
+        "outputDir": {
+          "type": "string",
+          "description": "Base output directory for exported files"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["json"],
+          "description": "Output format"
+        },
+        "prettyPrint": {
+          "type": "boolean",
+          "description": "Pretty-print JSON with indentation"
+        },
+        "sortKeys": {
+          "type": "boolean",
+          "description": "Sort object keys for deterministic output"
+        },
+        "collections": {
+          "type": "object",
+          "properties": {
+            "directory": { "type": "string" },
+            "filenamePattern": { "type": "string" }
+          }
+        },
+        "environments": {
+          "type": "object",
+          "properties": {
+            "directory": { "type": "string" },
+            "filenamePattern": { "type": "string" },
+            "redactSecrets": { "type": "boolean" },
+            "secretPatterns": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "manifest": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "filename": { "type": "string" }
+          }
+        }
+      }
+    },
+    "forkWorkflowConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable fork/PR workflow"
+        },
+        "forkNamePattern": {
+          "type": "string",
+          "description": "Pattern for fork collection names"
+        },
+        "targetWorkspace": {
+          "type": ["string", "null"],
+          "description": "Target workspace for forks (null = same workspace)"
+        },
+        "autoMergeApproved": {
+          "type": "boolean",
+          "description": "Auto-merge PRs that pass validation"
+        },
+        "requireReviewers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Required reviewers for PRs"
+        }
+      }
+    },
+    "ciConfig": {
+      "type": "object",
+      "properties": {
+        "checkBreakingChanges": {
+          "type": "boolean",
+          "description": "Run breaking change detection"
+        },
+        "failOnBreaking": {
+          "type": "boolean",
+          "description": "Fail CI on breaking changes"
+        },
+        "scheduleReverseSyncCheck": {
+          "type": "string",
+          "description": "Cron schedule for reverse sync checks"
+        }
+      }
+    }
+  }
+}

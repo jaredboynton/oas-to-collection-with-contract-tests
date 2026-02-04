@@ -240,17 +240,18 @@ export class ChangeDetector {
   /**
    * Check if a path is an enrichment field within a structural element
    * e.g., paths./users.get.description is an enrichment within paths
+   * Also handles nested paths like .example.0.title (changes within examples)
    */
   isEnrichmentWithinStructure(pathStr) {
-    const enrichmentSuffixes = [
-      '.description',
-      '.summary',
-      '.example',
-      '.examples',
-      '.externalDocs'
+    const enrichmentPatterns = [
+      /\.description$/,
+      /\.summary$/,
+      /\.example($|\.)/,   // .example or .example.anything
+      /\.examples($|\.)/,  // .examples or .examples.anything
+      /\.externalDocs($|\.)/
     ];
 
-    return enrichmentSuffixes.some(suffix => pathStr.endsWith(suffix));
+    return enrichmentPatterns.some(pattern => pattern.test(pathStr));
   }
 
   /**

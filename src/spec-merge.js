@@ -104,24 +104,25 @@ export class SpecMerge {
   parsePath(pathStr) {
     const parts = [];
     let current = '';
-    let inBracket = false;
+    let inPath = false;  // Track if we're inside a URL path segment
 
     for (let i = 0; i < pathStr.length; i++) {
       const char = pathStr[i];
 
-      if (char === '/' && !inBracket) {
-        // Start of path segment like /users
+      if (char === '/' && !inPath) {
+        // Start of URL path segment like /users
         if (current) parts.push(current);
         current = '/';
-      } else if (char === '.' && !inBracket && !current.startsWith('/')) {
+        inPath = true;
+      } else if (char === '.' && !inPath) {
+        // Regular dot separator
         if (current) parts.push(current);
         current = '';
-      } else if (char === '[') {
-        inBracket = true;
-        current += char;
-      } else if (char === ']') {
-        inBracket = false;
-        current += char;
+      } else if (char === '.' && inPath) {
+        // Dot after URL path - end the path segment
+        parts.push(current);
+        current = '';
+        inPath = false;
       } else {
         current += char;
       }
